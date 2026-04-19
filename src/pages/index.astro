@@ -1,5 +1,4 @@
 ---
-import { Image } from 'astro:assets';
 import { getCollection } from 'astro:content';
 import BaseHead from '../components/BaseHead.astro';
 import Footer from '../components/Footer.astro';
@@ -7,108 +6,157 @@ import FormattedDate from '../components/FormattedDate.astro';
 import Header from '../components/Header.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 
+const base = import.meta.env.BASE_URL;
 const posts = (await getCollection('blog')).sort(
 	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
 );
+const lead = posts[0];
+const rest = posts.slice(1);
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="ko">
 	<head>
 		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
-		<style>
-			main {
-				width: 960px;
-			}
-			ul {
-				display: flex;
-				flex-wrap: wrap;
-				gap: 2rem;
-				list-style-type: none;
-				margin: 0;
-				padding: 0;
-			}
-			ul li {
-				width: calc(50% - 1rem);
-			}
-			ul li * {
-				text-decoration: none;
-				transition: 0.2s ease;
-			}
-			ul li:first-child {
-				width: 100%;
-				margin-bottom: 1rem;
-				text-align: center;
-			}
-			ul li:first-child img {
-				width: 100%;
-			}
-			ul li:first-child .title {
-				font-size: 2.369rem;
-			}
-			ul li img {
-				margin-bottom: 0.5rem;
-				border-radius: 12px;
-			}
-			ul li a {
-				display: block;
-			}
-			.title {
-				margin: 0;
-				color: rgb(var(--black));
-				line-height: 1;
-			}
-			.date {
-				margin: 0;
-				color: rgb(var(--gray));
-			}
-			ul li a:hover h4,
-			ul li a:hover .date {
-				color: rgb(var(--accent));
-			}
-			ul a:hover img {
-				box-shadow: var(--box-shadow);
-			}
-			@media (max-width: 720px) {
-				ul {
-					gap: 0.5em;
-				}
-				ul li {
-					width: 100%;
-					text-align: center;
-				}
-				ul li:first-child {
-					margin-bottom: 0;
-				}
-				ul li:first-child .title {
-					font-size: 1.563em;
-				}
-			}
-		</style>
 	</head>
 	<body>
 		<Header />
 		<main>
-			<section>
-				<ul>
-					{
-						posts.map((post) => (
-							<li>
-								<a href={`/blog/${post.id}/`}>
-									{post.data.heroImage && (
-										<Image width={720} height={360} src={post.data.heroImage} alt="" />
-									)}
-									<h4 class="title">{post.data.title}</h4>
-									<p class="date">
-										<FormattedDate date={post.data.pubDate} />
-									</p>
-								</a>
-							</li>
-						))
-					}
-				</ul>
-			</section>
+			{
+				lead && (
+					<article class="lead">
+						<span class="kicker">Issue No. 01 · Front Page</span>
+						<h2 class="headline">
+							<a href={`${base}/${lead.id}/`}>{lead.data.title}</a>
+						</h2>
+						<p class="byline">
+							By <strong>조동필</strong> · <FormattedDate date={lead.data.pubDate} />
+						</p>
+						<p class="dek">{lead.data.description}</p>
+						<p class="readmore">
+							<a href={`${base}/${lead.id}/`}>Continue reading →</a>
+						</p>
+					</article>
+				)
+			}
+			{
+				rest.length > 0 && (
+					<section class="more">
+						<h3 class="section-label">Also in this issue</h3>
+						<ul>
+							{rest.map((post) => (
+								<li>
+									<a href={`${base}/${post.id}/`}>
+										<span class="date">
+											<FormattedDate date={post.data.pubDate} />
+										</span>
+										<span class="title">{post.data.title}</span>
+									</a>
+								</li>
+							))}
+						</ul>
+					</section>
+				)
+			}
 		</main>
 		<Footer />
 	</body>
 </html>
+
+<style>
+	.lead {
+		padding-top: 1rem;
+	}
+	.kicker {
+		display: inline-block;
+		font-size: 0.72rem;
+		letter-spacing: 0.22em;
+		text-transform: uppercase;
+		padding-bottom: 0.35rem;
+		border-bottom: 1px solid #000;
+		margin-bottom: 1.25rem;
+	}
+	.headline {
+		font-family: var(--serif-display);
+		font-weight: 900;
+		font-size: clamp(2rem, 5vw, 2.8rem);
+		line-height: 1.1;
+		letter-spacing: -0.015em;
+		margin: 0 0 0.75rem;
+		border-top: 0;
+		padding-top: 0;
+	}
+	.headline a {
+		color: #000;
+		text-decoration: none;
+	}
+	.headline a:hover {
+		text-decoration: underline;
+		text-underline-offset: 4px;
+	}
+	.byline {
+		margin: 0 0 1.2rem;
+		font-size: 0.9rem;
+		color: #333;
+	}
+	.dek {
+		font-size: 1.1rem;
+		line-height: 1.6;
+		color: #111;
+		margin: 0 0 1.25rem;
+	}
+	.readmore a {
+		font-style: italic;
+		text-decoration: none;
+		border-bottom: 1px solid #000;
+	}
+	.more {
+		margin-top: 3.5rem;
+		padding-top: 1.75rem;
+		border-top: 3px double #000;
+	}
+	.section-label {
+		font-family: var(--serif);
+		font-size: 0.72rem;
+		letter-spacing: 0.22em;
+		text-transform: uppercase;
+		margin: 0 0 1.25rem;
+		border-top: 0;
+		padding-top: 0;
+		font-weight: 700;
+	}
+	.more ul {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+	}
+	.more li {
+		padding: 0.6rem 0;
+		border-bottom: 1px solid #000;
+	}
+	.more li:last-child {
+		border-bottom: 0;
+	}
+	.more a {
+		display: flex;
+		gap: 1rem;
+		align-items: baseline;
+		color: #000;
+		text-decoration: none;
+	}
+	.more a:hover .title {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+	.more .date {
+		font-size: 0.8rem;
+		color: #555;
+		white-space: nowrap;
+		min-width: 7rem;
+	}
+	.more .title {
+		font-family: var(--serif-display);
+		font-size: 1.15rem;
+		font-weight: 700;
+	}
+</style>
