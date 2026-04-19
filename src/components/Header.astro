@@ -1,66 +1,27 @@
 ---
 import { SITE_TITLE } from '../consts';
-
-const base = import.meta.env.BASE_URL;
-const today = new Date();
-const dateStr = today.toLocaleDateString('en-US', {
-	weekday: 'long',
-	year: 'numeric',
-	month: 'long',
-	day: 'numeric',
-});
+const base = import.meta.env.BASE_URL || '/';
 ---
 
-<header class="masthead">
-	<div class="topbar">
-		<span class="issue">Vol. 1</span>
-		<span class="date">{dateStr}</span>
-		<span class="price">All articles free</span>
-	</div>
-	<h1 class="title"><a href={base || '/'}>{SITE_TITLE}</a></h1>
-	<p class="tagline">A notebook on frontend craft — i18n · rendering · design systems</p>
-	<hr class="double" />
+<header class="site-header">
+	<a href={base} class="site-title">{SITE_TITLE}</a>
 </header>
 
 <style>
-	.masthead {
-		max-width: 760px;
+	.site-header {
+		max-width: 680px;
 		margin: 0 auto;
-		padding: 2.5rem 1.25rem 1rem;
-		text-align: center;
-		font-family: var(--serif);
-		color: #000;
+		padding: 1.75rem 1.25rem 1rem;
 	}
-	.topbar {
-		display: flex;
-		justify-content: space-between;
-		font-size: 0.72rem;
-		letter-spacing: 0.18em;
-		text-transform: uppercase;
-		padding-bottom: 0.75rem;
-		border-bottom: 1px solid #000;
-	}
-	.title {
-		margin: 1.25rem 0 0.5rem;
-		font-family: var(--serif-display);
-		font-size: clamp(2.4rem, 6vw, 3.4rem);
-		font-weight: 900;
-		letter-spacing: -0.015em;
-		line-height: 1;
-	}
-	.title a {
+	.site-title {
+		display: inline-block;
+		font-size: 0.95rem;
+		font-weight: 600;
 		color: #000;
 		text-decoration: none;
 	}
-	.tagline {
-		margin: 0.25rem 0 1.25rem;
-		font-style: italic;
-		font-size: 0.95rem;
-		color: #333;
-	}
-	.double {
-		border: 0;
-		border-top: 3px double #000;
-		margin: 0;
+	.site-title:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
 	}
 </style>

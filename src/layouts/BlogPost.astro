@@ -6,9 +6,17 @@ import FormattedDate from '../components/FormattedDate.astro';
 import Header from '../components/Header.astro';
 import { AUTHOR, SITE_TITLE } from '../consts';
 
-type Props = CollectionEntry<'blog'>['data'];
+type Props = CollectionEntry<'blog'>['data'] & { rawBody?: string };
 
-const { title, description, pubDate, updatedDate, keywords, faq } = Astro.props;
+const {
+	title,
+	description,
+	pubDate,
+	updatedDate,
+	keywords,
+	faq,
+	rawBody = '',
+} = Astro.props;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site).toString();
 
@@ -52,6 +60,12 @@ const faqSchema =
 				})),
 			}
 		: null;
+
+const aiClipboardText = `아래는 "${title}" 글 전문입니다. 이 글을 읽고 사용자의 질문에 답하거나, 요청받은 방식으로 요약해주세요. (출처: ${canonicalURL})
+
+---
+
+${rawBody}`;
 ---
 
 <!doctype html>
@@ -77,25 +91,38 @@ const faqSchema =
 		<Header />
 		<main>
 			<article>
-				<header class="article-head">
-					<p class="kicker">Feature · Frontend</p>
+				<header class="post-header">
 					<h1>{title}</h1>
-					<p class="dek">{description}</p>
-					<p class="byline">
-						By <strong>{AUTHOR.name}</strong>
+					<p class="post-byline">
+						<span>{AUTHOR.name}</span>
 						<span class="sep">·</span>
 						<FormattedDate date={pubDate} />
 						{
 							updatedDate && (
 								<>
 									<span class="sep">·</span>
-									<span class="updated">Updated <FormattedDate date={updatedDate} /></span>
+									<span class="updated">
+										Updated <FormattedDate date={updatedDate} />
+									</span>
 								</>
 							)
 						}
 					</p>
-					<hr class="rule" />
 				</header>
+
+				<aside class="ai-copy" aria-labelledby="ai-copy-title">
+					<div class="ai-copy-meta">
+						<strong id="ai-copy-title">이 글을 AI로 요약·질문하고 싶다면</strong>
+						<p>
+							아래 버튼을 누르면 <b>본문 전체</b>와 AI에 붙여넣을 안내 문구가 함께 복사됩니다.
+							ChatGPT · Claude · Perplexity · Gemini 등 어느 AI에 붙여넣어도 됩니다.
+						</p>
+					</div>
+					<button type="button" class="ai-copy-btn" id="ai-copy-btn">전체 내용 복사</button>
+				</aside>
+
+				<pre hidden id="ai-copy-source">{aiClipboardText}</pre>
+
 				<div class="prose">
 					<slot />
 				</div>
@@ -105,39 +132,58 @@ const faqSchema =
 	</body>
 </html>
 
+<script is:inline>
+	(function () {
+		const btn = document.getElementById('ai-copy-btn');
+		const src = document.getElementById('ai-copy-source');
+		if (!btn || !src) return;
+		const defaultLabel = btn.textContent;
+		btn.addEventListener('click', async () => {
+			const text = src.textContent || '';
+			try {
+				if (navigator.clipboard && window.isSecureContext) {
+					await navigator.clipboard.writeText(text);
+				} else {
+					const ta = document.createElement('textarea');
+					ta.value = text;
+					ta.style.position = 'fixed';
+					ta.style.opacity = '0';
+					document.body.appendChild(ta);
+					ta.select();
+					document.execCommand('copy');
+					document.body.removeChild(ta);
+				}
+				btn.textContent = '복사 완료';
+				btn.classList.add('is-copied');
+				setTimeout(() => {
+					btn.textContent = defaultLabel;
+					btn.classList.remove('is-copied');
+				}, 2000);
+			} catch (e) {
+				btn.textContent = '복사 실패 — 수동으로 선택하세요';
+				setTimeout(() => {
+					btn.textContent = defaultLabel;
+				}, 3000);
+			}
+		});
+	})();
+</script>
+
 <style>
-	.article-head {
-		margin: 2rem 0 2.5rem;
+	.post-header {
+		margin: 0 0 1.5rem;
 	}
-	.kicker {
-		margin: 0 0 0.9rem;
-		font-size: 0.72rem;
-		letter-spacing: 0.22em;
-		text-transform: uppercase;
-		color: #000;
+	.post-header h1 {
+		font-size: 1.75rem;
+		font-weight: 700;
+		line-height: 1.25;
+		letter-spacing: -0.01em;
+		margin: 0 0 0.45rem;
 	}
-	.article-head h1 {
-		font-family: var(--serif-display);
-		font-weight: 900;
-		font-size: clamp(2.1rem, 5.5vw, 3.1rem);
-		line-height: 1.08;
-		letter-spacing: -0.018em;
-		margin: 0 0 0.85rem;
-	}
-	.dek {
-		font-size: 1.12rem;
-		line-height: 1.55;
-		color: #111;
-		margin: 0 0 1.2rem;
-		font-style: italic;
-	}
-	.byline {
-		font-size: 0.88rem;
-		color: #333;
-		margin: 0 0 1.25rem;
-	}
-	.byline strong {
-		color: #000;
+	.post-byline {
+		font-size: 0.82rem;
+		color: #777;
+		margin: 0;
 	}
 	.sep {
 		margin: 0 0.35rem;
@@ -145,18 +191,64 @@ const faqSchema =
 	.updated {
 		font-style: italic;
 	}
-	.rule {
-		border: 0;
-		border-top: 3px double #000;
-		margin: 1rem 0 0;
+	.ai-copy {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		margin: 1.25rem 0 2rem;
+		padding: 0.9rem 1rem;
+		border: 1px solid #e5e5e5;
+		border-radius: 4px;
+		background: #fafafa;
 	}
-	.prose :global(p):first-of-type::first-letter {
-		font-family: var(--serif-display);
-		font-size: 3.2em;
-		font-weight: 900;
-		line-height: 0.9;
-		float: left;
-		padding: 0.2rem 0.55rem 0 0;
-		margin-top: 0.2rem;
+	.ai-copy-meta {
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+	.ai-copy-meta strong {
+		display: block;
+		font-size: 0.88rem;
+		font-weight: 600;
+		color: #000;
+		margin-bottom: 0.25rem;
+	}
+	.ai-copy-meta p {
+		margin: 0;
+		font-size: 0.8rem;
+		color: #555;
+		line-height: 1.5;
+	}
+	.ai-copy-btn {
+		flex: 0 0 auto;
+		padding: 0.55rem 0.9rem;
+		font-family: inherit;
+		font-size: 0.82rem;
+		font-weight: 500;
+		color: #fff;
+		background: #000;
+		border: 1px solid #000;
+		border-radius: 3px;
+		cursor: pointer;
+		white-space: nowrap;
+		transition: background 0.15s, color 0.15s;
+	}
+	.ai-copy-btn:hover {
+		background: #222;
+	}
+	.ai-copy-btn.is-copied {
+		background: #fff;
+		color: #000;
+	}
+	@media (max-width: 540px) {
+		.ai-copy {
+			flex-direction: column;
+			align-items: stretch;
+		}
+		.ai-copy-btn {
+			width: 100%;
+		}
+	}
+	.prose {
+		margin-top: 1rem;
 	}
 </style>

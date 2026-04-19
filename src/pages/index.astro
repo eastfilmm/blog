@@ -10,8 +10,6 @@ const base = import.meta.env.BASE_URL;
 const posts = (await getCollection('blog')).sort(
 	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
 );
-const lead = posts[0];
-const rest = posts.slice(1);
 ---
 
 <!doctype html>
@@ -22,141 +20,75 @@ const rest = posts.slice(1);
 	<body>
 		<Header />
 		<main>
-			{
-				lead && (
-					<article class="lead">
-						<span class="kicker">Issue No. 01 · Front Page</span>
-						<h2 class="headline">
-							<a href={`${base}/${lead.id}/`}>{lead.data.title}</a>
-						</h2>
-						<p class="byline">
-							By <strong>조동필</strong> · <FormattedDate date={lead.data.pubDate} />
-						</p>
-						<p class="dek">{lead.data.description}</p>
-						<p class="readmore">
-							<a href={`${base}/${lead.id}/`}>Continue reading →</a>
-						</p>
-					</article>
-				)
-			}
-			{
-				rest.length > 0 && (
-					<section class="more">
-						<h3 class="section-label">Also in this issue</h3>
-						<ul>
-							{rest.map((post) => (
-								<li>
-									<a href={`${base}/${post.id}/`}>
-										<span class="date">
-											<FormattedDate date={post.data.pubDate} />
-										</span>
-										<span class="title">{post.data.title}</span>
-									</a>
-								</li>
-							))}
-						</ul>
-					</section>
-				)
-			}
+			<p class="intro">{SITE_DESCRIPTION}</p>
+			<ul class="post-list">
+				{
+					posts.map((post) => (
+						<li>
+							<a href={`${base}/${post.id}/`}>
+								<span class="post-title">{post.data.title}</span>
+								<span class="post-meta">
+									<FormattedDate date={post.data.pubDate} />
+								</span>
+							</a>
+							{post.data.description && (
+								<p class="post-desc">{post.data.description}</p>
+							)}
+						</li>
+					))
+				}
+			</ul>
 		</main>
 		<Footer />
 	</body>
 </html>
 
 <style>
-	.lead {
-		padding-top: 1rem;
+	.intro {
+		margin: 0 0 2rem;
+		color: #444;
+		font-size: 0.95rem;
 	}
-	.kicker {
-		display: inline-block;
-		font-size: 0.72rem;
-		letter-spacing: 0.22em;
-		text-transform: uppercase;
-		padding-bottom: 0.35rem;
-		border-bottom: 1px solid #000;
-		margin-bottom: 1.25rem;
-	}
-	.headline {
-		font-family: var(--serif-display);
-		font-weight: 900;
-		font-size: clamp(2rem, 5vw, 2.8rem);
-		line-height: 1.1;
-		letter-spacing: -0.015em;
-		margin: 0 0 0.75rem;
-		border-top: 0;
-		padding-top: 0;
-	}
-	.headline a {
-		color: #000;
-		text-decoration: none;
-	}
-	.headline a:hover {
-		text-decoration: underline;
-		text-underline-offset: 4px;
-	}
-	.byline {
-		margin: 0 0 1.2rem;
-		font-size: 0.9rem;
-		color: #333;
-	}
-	.dek {
-		font-size: 1.1rem;
-		line-height: 1.6;
-		color: #111;
-		margin: 0 0 1.25rem;
-	}
-	.readmore a {
-		font-style: italic;
-		text-decoration: none;
-		border-bottom: 1px solid #000;
-	}
-	.more {
-		margin-top: 3.5rem;
-		padding-top: 1.75rem;
-		border-top: 3px double #000;
-	}
-	.section-label {
-		font-family: var(--serif);
-		font-size: 0.72rem;
-		letter-spacing: 0.22em;
-		text-transform: uppercase;
-		margin: 0 0 1.25rem;
-		border-top: 0;
-		padding-top: 0;
-		font-weight: 700;
-	}
-	.more ul {
+	.post-list {
 		list-style: none;
 		padding: 0;
 		margin: 0;
 	}
-	.more li {
-		padding: 0.6rem 0;
-		border-bottom: 1px solid #000;
+	.post-list > li {
+		padding: 1rem 0;
+		border-bottom: 1px solid #e5e5e5;
 	}
-	.more li:last-child {
+	.post-list > li:first-child {
+		padding-top: 0;
+	}
+	.post-list > li:last-child {
 		border-bottom: 0;
 	}
-	.more a {
-		display: flex;
-		gap: 1rem;
-		align-items: baseline;
-		color: #000;
+	.post-list a {
+		display: block;
 		text-decoration: none;
+		color: #000;
 	}
-	.more a:hover .title {
-		text-decoration: underline;
-		text-underline-offset: 3px;
+	.post-title {
+		display: block;
+		font-size: 1.05rem;
+		font-weight: 600;
+		line-height: 1.4;
 	}
-	.more .date {
+	.post-meta {
+		display: block;
 		font-size: 0.8rem;
-		color: #555;
-		white-space: nowrap;
-		min-width: 7rem;
+		color: #777;
+		margin-top: 0.2rem;
 	}
-	.more .title {
-		font-family: var(--serif-display);
-		font-size: 1.15rem;
-		font-weight: 700;
+	.post-desc {
+		margin: 0.45rem 0 0;
+		font-size: 0.9rem;
+		color: #444;
+		line-height: 1.5;
+	}
+	.post-list a:hover .post-title {
+		text-decoration: underline;
+		text-underline-offset: 2px;
 	}
 </style>

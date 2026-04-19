@@ -1,65 +1,27 @@
 ---
-import { AUTHOR, SITE_TITLE } from '../consts';
+import { AUTHOR } from '../consts';
 const year = new Date().getFullYear();
 ---
 
-<footer class="colophon">
-	<hr class="double" />
-	<div class="cols">
-		<div>
-			<span class="label">Editor &amp; Author</span>
-			<strong>{AUTHOR.name}</strong>
-			<span>— {AUTHOR.jobTitle}, {AUTHOR.affiliation}</span>
-		</div>
-		<div>
-			<span class="label">Correspondence</span>
-			<a href={`mailto:${AUTHOR.email}`}>{AUTHOR.email}</a>
-		</div>
-	</div>
-	<p class="copyright">© {year} {SITE_TITLE}. Printed on the web.</p>
+<footer class="site-footer">
+	<p>
+		© {year} {AUTHOR.name} · <a href={`mailto:${AUTHOR.email}`}>{AUTHOR.email}</a>
+	</p>
 </footer>
 
 <style>
-	.colophon {
-		max-width: 760px;
-		margin: 4rem auto 3rem;
-		padding: 0 1.25rem;
-		font-family: var(--serif);
-		font-size: 0.85rem;
-		color: #000;
+	.site-footer {
+		max-width: 680px;
+		margin: 2.5rem auto 2rem;
+		padding: 1rem 1.25rem 0;
+		border-top: 1px solid #e5e5e5;
+		font-size: 0.82rem;
+		color: #777;
 	}
-	.double {
-		border: 0;
-		border-top: 3px double #000;
-		margin: 0 0 1.25rem;
+	.site-footer p {
+		margin: 0;
 	}
-	.cols {
-		display: flex;
-		justify-content: space-between;
-		gap: 1rem;
-		flex-wrap: wrap;
-	}
-	.cols > div {
-		display: flex;
-		flex-direction: column;
-		gap: 0.1rem;
-	}
-	.label {
-		font-size: 0.7rem;
-		letter-spacing: 0.18em;
-		text-transform: uppercase;
-		color: #333;
-	}
-	.copyright {
-		margin: 1.75rem 0 0;
-		text-align: center;
-		font-style: italic;
-		font-size: 0.8rem;
-		color: #333;
-	}
-	.colophon a {
-		color: #000;
-		text-decoration: underline;
-		text-underline-offset: 2px;
+	.site-footer a {
+		color: #777;
 	}
 </style>
