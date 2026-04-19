@@ -164,7 +164,7 @@ pre > code {
 	all: unset;
 	font-family: inherit;
 	font-size: inherit;
-	color: var(--text);
+	color: #fff;
 }
 
 /* -------- Tables -------- */
